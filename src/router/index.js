@@ -31,7 +31,6 @@ const router = new VueRouter({
     { path: '/search', component: Search },
     { path: '/myorder', component: Myorder },
     { path: '/pay', component: Pay },
-    { path: 'myorder', component: Myorder },
     // 动态路由传惨
     { path: '/prodetail/:id', component: Prodetail },
     { path: '/searchlist', component: Searchlist }
