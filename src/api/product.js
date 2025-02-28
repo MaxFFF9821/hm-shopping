@@ -10,3 +10,20 @@ export const getProList = (obj) => {
     }
   })
 }
+
+export const getProDetail = (goodsId) => {
+  return request.get('/goods/detail', {
+    params: {
+      goodsId
+    }
+  })
+}
+
+export const getProComment = (goodsId, limit) => {
+  return request.get('/comment/listRows', {
+    params: {
+      goodsId,
+      limit
+    }
+  })
+}
