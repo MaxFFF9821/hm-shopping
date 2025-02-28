@@ -9,32 +9,39 @@
 
       <div class="form">
         <div class="form-item">
-          <input class="inp" maxlength="11" placeholder="请输入手机号码" type="text">
+          <input v-model="mobile" class="inp" maxlength="11" placeholder="请输入手机号码" type="text">
         </div>
         <div class="form-item">
           <input v-model="picCode" class="inp" maxlength="5" placeholder="请输入图形验证码" type="text">
           <img v-if="picUrl" :src="picUrl"  @click="getPicCode" alt="">
         </div>
         <div class="form-item">
-          <input class="inp" placeholder="请输入短信验证码" type="text">
-          <button>获取验证码</button>
+          <input v-model="msgCode" class="inp" placeholder="请输入短信验证码" type="text">
+          <button @click="getCode" >{{ second === totalSecond ? '获取验证码' : second + '秒后重新发送'}}</button>
         </div>
       </div>
 
-      <div class="login-btn">登录</div>
+      <div @click="login" class="login-btn">登录</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getPicCode } from '@/api/login'
+import { getPicCode, getMsgCode, codeLogin } from '@/api/login'
+// import { Toast } from 'vant'
+
 export default {
   name: 'LoginPage',
   data () {
     return {
       picCode: '',
       picKey: '',
-      picUrl: ''
+      picUrl: '',
+      totalSecond: 60,
+      second: 60,
+      timer: null,
+      mobile: '',
+      msgCode: ''
     }
   },
   async created () {
@@ -45,8 +52,59 @@ export default {
       const { data: { base64, key } } = await getPicCode()
       this.picUrl = base64
       this.picKey = key
+    },
+
+    validFn () {
+      if (!/^1[3-9]\d{9}$/.test(this.mobile)) {
+        this.$toast('Please enter correct phone number')
+        return false
+      }
+      if (!/^\w{4}$/.test(this.picCode)) {
+        this.$toast('Please enter correct verifcation code')
+        return false
+      }
+      return true
+    },
+
+    async getCode () {
+      if (!this.validFn()) {
+        return
+      }
+
+      if (!this.timer || this.second === this.totalSecond) {
+        const res = await getMsgCode(this.picCode, this.picKeykey, this.mobile)
+        this.$toast('成功，注意查收')
+        console.log(res)
+
+        this.timer = setInterval(() => {
+          this.second--
+          if (this.second <= 0) {
+            clearInterval(this.timer)
+            this.timer = null
+            this.second = this.totalSecond
+          }
+        }, 1000)
+      }
+    },
+
+    async login () {
+      if (!this.validFn()) {
+        return
+      }
+      if (!/^\d{6}$/.test(this.msgCode)) {
+        this.$toast('请输入正确验证码')
+        return
+      }
+      const res = await codeLogin(this.mobile, this.msgCode)
+      this.$toast('登录成功')
+      console.log(res)
+      this.$router.push('/')
     }
+  },
+  destroyed () {
+    clearInterval(this.timer)
   }
+
 }
 </script>
 
