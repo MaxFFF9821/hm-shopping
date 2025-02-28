@@ -11,6 +11,7 @@ import Home from '@/views/layout/home.vue'
 import Cart from '@/views/layout/cart.vue'
 import Category from '@/views/layout/category.vue'
 import User from '@/views/layout/user.vue'
+import store from '@/store'
 
 Vue.use(VueRouter)
 
@@ -36,5 +37,19 @@ const router = new VueRouter({
     { path: '/searchlist', component: Searchlist }
   ]
 })
+const authUrls = ['/pay', '/myorder']
 
+router.beforeEach((to, from, next) => {
+  if (!authUrls.includes(to.path)) {
+    next()
+    return
+  }
+  const token = store.getters.token
+  // console.log(token)
+  if (token) {
+    next()
+  } else {
+    next('/login')
+  }
+})
 export default router
