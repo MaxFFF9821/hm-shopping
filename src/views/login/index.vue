@@ -95,9 +95,10 @@ export default {
         this.$toast('请输入正确验证码')
         return
       }
+      console.log('发送登陆请求')
       const res = await codeLogin(this.mobile, this.msgCode)
+      this.$store.commit('user/setUserInfo', res.data)
       this.$toast('登录成功')
-      console.log(res)
       this.$router.push('/')
     }
   },
