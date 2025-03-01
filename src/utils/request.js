@@ -1,4 +1,5 @@
 import axios from 'axios'
+import store from '@/store'
 import { Toast } from 'vant'
 
 const instance = axios.create({
@@ -17,6 +18,11 @@ instance.interceptors.request.use(
       loadingType: 'spinner',
       duration: 0
     })
+    const token = store.getters.token
+    if (token) {
+      config.headers['Access-Token'] = token
+      config.headers.platform = 'H5'
+    }
     return config
   },
   function (error) {

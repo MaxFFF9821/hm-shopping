@@ -69,6 +69,7 @@
         <span>首页</span>
       </div>
       <div class="icon-cart">
+        <span v-if="cartTotal > 0" class="num">{{ cartTotal }}</span>
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
@@ -101,7 +102,7 @@
       <count-box v-model="addCount"></count-box>
     </div>
     <div class="showbtn" v-if="detail.stock_total > 0">
-      <div class="btn" v-if="mode === 'cart'">加入购物车</div>
+      <div class="btn" v-if="mode === 'cart'" @click="addCart" >加入购物车</div>
       <div class="btn now" v-else>立刻购买</div>
     </div>
     <div class="btn-none" v-else>该商品已抢完</div>
@@ -114,6 +115,8 @@
 import { getProDetail, getProComment } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
 import CountBox from '@/components/CountBox.vue'
+import { addCart } from '@/api/cart'
+
 export default {
   name: 'ProDetail',
   components: {
@@ -129,7 +132,8 @@ export default {
       defaultImg,
       showPannel: false,
       mode: 'cart',
-      addCount: 1
+      addCount: 1,
+      cartTotal: 0
     }
   },
   computed: {
@@ -163,12 +167,53 @@ export default {
     buyFn () {
       this.mode = 'buyNow'
       this.showPannel = true
+    },
+    async addCart () {
+      if (!this.$store.getters.token) {
+        this.$dialog.confirm({
+          title: '温馨提示',
+          message: 'Must Log In',
+          confirmButtonText: 'login',
+          cancelButtonText: 'Shop again'
+        })
+          .then(() => {
+            this.$router.replace({
+              path: '/login',
+              query: {
+                backUrl: this.$route.fullPath
+              }
+            })
+          })
+          .catch(() => {})
+        return
+      }
+      const { data } = await addCart(this.goodsId, this.addCount, this.detail.skuList[0].goods_sku_id)
+      this.cartTotal = data.cartTotal
+      this.$toast('add success')
+      this.showPannel = false
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+.footer .icon-cart {
+  position: relative;
+  padding: 0 6px;
+  .num {
+    z-index: 999;
+    position: absolute;
+    top: -2px;
+    right: 0;
+    min-width: 16px;
+    padding: 0 4px;
+    color: #fff;
+    text-align: center;
+    background-color: #ee0a24;
+    border-radius: 50%;
+  }
+}
+
 .prodetail {
   padding-top: 46px;
   ::v-deep .van-icon-arrow-left {
