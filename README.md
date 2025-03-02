@@ -1,4 +1,5 @@
 # hm-shopping
+Shopping Cart App
 
 ## Project setup
 ```
